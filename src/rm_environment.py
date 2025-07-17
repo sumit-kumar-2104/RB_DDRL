@@ -8,10 +8,10 @@ import logging
 import abc
 import tensorflow as tf
 import numpy as np
-import src.resources as resources
+import cluster
 import constants
 from queue import PriorityQueue
-import src.vm_job as defs
+import definitions as defs
 from tf_agents.environments import py_environment
 from tf_agents.environments import tf_environment
 from tf_agents.environments import tf_py_environment
@@ -45,14 +45,14 @@ class ClusterEnv(py_environment.PyEnvironment):
         self._action_spec = array_spec.BoundedArraySpec(
             shape=(), dtype=np.int32, minimum=0, maximum=9, name='action')
         self._observation_spec = array_spec.BoundedArraySpec(
-            shape=(resources.features,), dtype=np.int32, minimum=resources.cluster_state_min,
-            maximum=resources.cluster_state_max,
+            shape=(cluster.features,), dtype=np.int32, minimum=cluster.cluster_state_min,
+            maximum=cluster.cluster_state_max,
             name='observation')
-        self._state = copy.deepcopy(resources.cluster_state_init)
+        self._state = copy.deepcopy(cluster.cluster_state_init)
         self._episode_ended = False
         self.reward = 0
-        self.vms = copy.deepcopy(resources.VMS)
-        self.jobs = copy.deepcopy(resources.JOBS)
+        self.vms = copy.deepcopy(cluster.VMS)
+        self.jobs = copy.deepcopy(cluster.JOBS)
         self.clock = self.jobs[0].arrival_time
         self.job_idx = 0
         self.job_queue = PriorityQueue()
@@ -86,11 +86,11 @@ class ClusterEnv(py_environment.PyEnvironment):
 
     def _reset(self):
         # cluster.init_cluster()
-        self._state = copy.deepcopy(resources.cluster_state_init)
+        self._state = copy.deepcopy(cluster.cluster_state_init)
         self._episode_ended = False
         self.reward = 0
-        self.vms = copy.deepcopy(resources.VMS)
-        self.jobs = copy.deepcopy(resources.JOBS)
+        self.vms = copy.deepcopy(cluster.VMS)
+        self.jobs = copy.deepcopy(cluster.JOBS)
         self.clock = self.jobs[0].arrival_time
         self.job_idx = 0
         self.job_queue = PriorityQueue()
@@ -168,9 +168,9 @@ class ClusterEnv(py_environment.PyEnvironment):
             end_time = self.clock  # Capture the end time at the end of the episode
             self.total_time = end_time - self.start_time
 
-            epi_cost = resources.max_episode_cost
-            epi_avg_job_duration = resources.min_avg_job_duration + \
-                                   resources.min_avg_job_duration * float(constants.placement_penalty) / 100
+            epi_cost = cluster.max_episode_cost
+            epi_avg_job_duration = cluster.min_avg_job_duration + \
+                                   cluster.min_avg_job_duration * float(constants.placement_penalty) / 100
             #epi_cost = self.calculate_vm_cost()
             #epi_avg_job_duration = self.calculate_avg_time()
             resource_utilization = self.calculate_average_utilization()
@@ -181,14 +181,14 @@ class ClusterEnv(py_environment.PyEnvironment):
             if self.episode_success:
                 # Multi-Objective Reward Calculation
                 epi_cost = self.calculate_vm_cost()
-                cost_normalized = 1 - (epi_cost / resources.max_episode_cost)
+                cost_normalized = 1 - (epi_cost / cluster.max_episode_cost)
                 #cost_reward = cost_normalized * constants.beta
                 cost_reward = cost_normalized * 0.0
                 #print(f"Cost: {epi_cost}, Cost Reward: {cost_reward}")
 
                 epi_avg_job_duration = self.calculate_avg_time()
-                max_avg_job_duration = resources.min_avg_job_duration + resources.min_avg_job_duration * (constants.placement_penalty/100.0)
-                time_normalized = 1 - (epi_avg_job_duration-resources.min_avg_job_duration) / (max_avg_job_duration-resources.min_avg_job_duration)
+                max_avg_job_duration = cluster.min_avg_job_duration + cluster.min_avg_job_duration * (constants.placement_penalty/100.0)
+                time_normalized = 1 - (epi_avg_job_duration-cluster.min_avg_job_duration) / (max_avg_job_duration-cluster.min_avg_job_duration)
                 #time_reward = time_normalized * (1 - constants.beta)
                 time_reward = time_normalized * 0.0
                 #print(f"Average Job Duration: {epi_avg_job_duration}, Time Reward: {time_reward}")
@@ -258,7 +258,7 @@ class ClusterEnv(py_environment.PyEnvironment):
             self.total_mem_used += finished_job.mem * finished_job.duration
             # TODO copy/reference needed or not?
             # self.vms[vm.id] = vm
-        self._state = resources.gen_cluster_state(self.job_idx, self.jobs, self.vms)
+        self._state = cluster.gen_cluster_state(self.job_idx, self.jobs, self.vms)
         self.update_resource_utilization()  # Update utilization after job completion
         logging.info("CLOCK: {}: Finished execution of job: {}".format(self.clock, finished_job.id))
         logging.debug("CLOCK: {}: Current Cluster State: {}".format(self.clock, self._state))
@@ -363,7 +363,7 @@ class ClusterEnv(py_environment.PyEnvironment):
                     break
         
         # generate new cluster state
-        self._state = resources.gen_cluster_state(self.job_idx, self.jobs,
+        self._state = cluster.gen_cluster_state(self.job_idx, self.jobs,
                                                 self.vms)
         logging.debug("CLOCK: {}: Current Cluster State: {}".format(self.clock, self._state))
 

@@ -19,7 +19,7 @@ from itertools import chain
 import seaborn as sns
 
 import constants
-from src.rb_environment import ClusterEnv
+from rm_environment import ClusterEnv
 
 tf.compat.v1.enable_v2_behavior()
 

@@ -1,9 +1,9 @@
 import utilities
 import constants
-import src.resources as resources
+import cluster
 import REINFORCE_tfagent
 import DQN_tfagent
-import src.jobs_workload as jobs_workload
+import workload
 import R_DQN_tfagent
 import QR_DQN_tfagent
 import C51_tfagent
@@ -12,8 +12,8 @@ import C51_tfagent
 
 def main():
     utilities.load_config()
-    jobs_workload.read_workload() 
-    resources.init_cluster()
+    workload.read_workload() 
+    cluster.init_cluster()
 
     if constants.algo == 'reinforce':
         print("Running Reinforce Algorithm with iteration: {}, workload: {}, beta: {}"

@@ -1,6 +1,6 @@
 # default values
-root = 'D:\\sumit\\RB_DDRL-master'
-algo = 'reinforce'
+root = 'D:\\RM_DeepRL-master'
+algo = 'c51'
 workload = 'jobs.csv'
 beta = 0.5
 iteration = 10000

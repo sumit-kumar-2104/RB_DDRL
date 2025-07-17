@@ -7,7 +7,7 @@ from tf_agents.agents.dqn import dqn_agent
 from tf_agents.environments import tf_py_environment
 
 import constants
-from src.rb_environment import ClusterEnv
+from rm_environment import ClusterEnv
 from tf_agents.networks import network
 from tf_agents.networks import q_network
 from tf_agents.replay_buffers import tf_uniform_replay_buffer

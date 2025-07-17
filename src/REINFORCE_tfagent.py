@@ -11,7 +11,7 @@ from tf_agents.agents.reinforce import reinforce_agent
 from tf_agents.drivers import dynamic_step_driver
 from tf_agents.environments import tf_py_environment
 
-from src.rb_environment import ClusterEnv
+from rm_environment import ClusterEnv
 from tf_agents.eval import metric_utils
 from tf_agents.metrics import tf_metrics
 from tf_agents.networks import q_network, actor_distribution_network
@@ -88,15 +88,15 @@ def compute_avg_reward(environment, policy, num_episodes=10):
     return avg_reward.numpy()[0]
 
 
-# def plot_smoothed_rewards(rewards, window_size=100):
-#     smoothed_rewards = np.convolve(rewards, np.ones(window_size)/window_size, mode='valid')
+def plot_smoothed_rewards(rewards, window_size=100):
+    smoothed_rewards = np.convolve(rewards, np.ones(window_size)/window_size, mode='valid')
     
-#     plt.figure(figsize=(12, 6))
-#     plt.plot(smoothed_rewards, label='Reward')
-#     plt.ylabel('Reward')
-#     plt.xlabel('Step')
-#     plt.legend()
-#     plt.show()
+    plt.figure(figsize=(12, 6))
+    plt.plot(smoothed_rewards, label='Reward')
+    plt.ylabel('Reward')
+    plt.xlabel('Step')
+    plt.legend()
+    plt.show()
 
 
 
@@ -111,7 +111,7 @@ def train_reinforce(
         num_eval_episodes=10,  # @param {type:"integer"}
         eval_interval=1000  # @param {type:"integer"}
 ):
-    file = open('D:\\sumit\\RB_DDRL-master\\output\\avg_returns_'+constants.algo+'_beta_'+str(constants.beta)+'.csv', 'w', newline='')
+    file = open('D:\\sumit\\RM_DeepRL-master\\output\\avg_returns_'+constants.algo+'_beta_'+str(constants.beta)+'.csv', 'w', newline='')
     avg_return_writer = csv.writer(file, delimiter=',')
     avg_return_writer.writerow(["Iteration", "AVG_Return", "AVG_Reward"])
 
@@ -200,14 +200,14 @@ def train_reinforce(
     # *** Visualizations ***
 
     iterations = range(0, num_iterations + 1, eval_interval)
-    # plt.plot(iterations, returns, label='Average Return')
-    # plt.plot(iterations, rewards, label='Average Reward')
-    # plt.ylabel('Average Return / Reward')
-    # plt.xlabel('Iterations')
-    # plt.legend()
-    # plt.show()
+    plt.plot(iterations, returns, label='Average Return')
+    plt.plot(iterations, rewards, label='Average Reward')
+    plt.ylabel('Average Return / Reward')
+    plt.xlabel('Iterations')
+    plt.legend()
+    plt.show()
 
 
 
-    # # Plot the simple rewards with smoothing
-    # plot_smoothed_rewards(simple_rewards)
+    # Plot the simple rewards with smoothing
+    plot_smoothed_rewards(simple_rewards)

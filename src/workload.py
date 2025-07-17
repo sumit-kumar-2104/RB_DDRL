@@ -1,11 +1,11 @@
 import csv
-import src.vm_job as defs
+import definitions as defs
 import constants
 JOBS_WORKLOAD = []
 
 
 def read_workload():
-    with open('D:\\sumit\\RM_DeepRL-master\\input\\'+constants.workload) as csvfile:
+    with open('D:\\RM_DeepRL-master\\input\\'+constants.workload) as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         global JOBS_WORKLOAD
         JOBS_WORKLOAD = []

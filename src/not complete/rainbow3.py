@@ -7,7 +7,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from collections import namedtuple, deque
 import matplotlib.pyplot as plt
-from src.rb_environment import ClusterEnv  # Importing the custom environment
+from rm_environment import ClusterEnv  # Importing the custom environment
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 

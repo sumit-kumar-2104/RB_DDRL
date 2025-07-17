@@ -1,6 +1,6 @@
 import numpy as np
-import src.vm_job as defs
-import src.jobs_workload as jobs_workload
+import definitions as defs
+import workload
 import copy
 
 # cluster resource details
@@ -121,7 +121,7 @@ def gen_jobs_simple():
 
 def fetch_jobs_workload():
     global JOBS
-    JOBS = copy.deepcopy(jobs_workload.JOBS_WORKLOAD)
+    JOBS = copy.deepcopy(workload.JOBS_WORKLOAD)
 
 
 def init_jobs():

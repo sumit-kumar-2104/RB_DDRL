@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 import math
 import logging
-from src.rb_environment import ClusterEnv  # Make sure this is correctly defined
+from rm_environment import ClusterEnv  # Make sure this is correctly defined
 import constants
 import csv
 from itertools import chain
@@ -205,6 +205,36 @@ class PrioritizedReplayBuffer(tf_uniform_replay_buffer.TFUniformReplayBuffer):
         return experience, weights_tensor
 
 
+
+##################################################################################################################################################################
+
+def plot_throughput_heatmap(throughput_list, downsample_factor=100, grid_size=(10, 10)):
+    # Downsample the data
+    throughput_list = throughput_list[::downsample_factor]
+
+    # Reshape the throughput list to match the grid size
+    throughput_matrix = np.array(throughput_list[:grid_size[0]*grid_size[1]]).reshape(grid_size)
+
+    # Plot the heatmap
+    plt.figure(figsize=(12, 6))
+    sns.heatmap(throughput_matrix, cmap='viridis', annot=True, fmt=".1f")
+    plt.ylabel('Job Throughput %')
+    plt.xlabel('Episode')
+    plt.title('Job Throughput Heatmap')
+    plt.show()
+
+
+def plot_metrics(returns, losses, log_interval):
+    iterations = range(0, len(returns) * log_interval, log_interval)
+    plt.plot(iterations, returns, label='Average Return')
+    plt.plot(iterations, losses, label='Average Loss')
+    plt.xlabel('Iterations')
+    plt.ylabel('Average Return / Loss')
+    plt.legend()
+    plt.show()
+
+
+
 logging.basicConfig(level=logging.INFO)
 
 def collect_step(environment, policy, buffer, cpu_utilization_list, mem_utilization_list, adherence_list):
@@ -233,69 +263,39 @@ def collect_data(env, policy, buffer, steps, cpu_utilization_list, mem_utilizati
 
 
 
-##################################################################################################################################################################
 
-# def plot_throughput_heatmap(throughput_list, downsample_factor=100, grid_size=(10, 10)):
-#     # Downsample the data
-#     throughput_list = throughput_list[::downsample_factor]
-
-#     # Reshape the throughput list to match the grid size
-#     throughput_matrix = np.array(throughput_list[:grid_size[0]*grid_size[1]]).reshape(grid_size)
-
-#     # Plot the heatmap
-#     plt.figure(figsize=(12, 6))
-#     sns.heatmap(throughput_matrix, cmap='viridis', annot=True, fmt=".1f")
-#     plt.ylabel('Job Throughput %')
-#     plt.xlabel('Episode')
-#     plt.title('Job Throughput Heatmap')
-#     plt.show()
-
-
-# def plot_metrics(returns, losses, log_interval):
-#     iterations = range(0, len(returns) * log_interval, log_interval)
-#     plt.plot(iterations, returns, label='Average Return')
-#     plt.plot(iterations, losses, label='Average Loss')
-#     plt.xlabel('Iterations')
-#     plt.ylabel('Average Return / Loss')
-#     plt.legend()
-#     plt.show()
-
-
-
-
-
-# # Function to plot episode costs using Bokeh
-# def plot_episode_costs_bokeh(episode_costs, downsample_factor=1, smooth_factor=1):
-#     # Normalize the episode costs
-#     max_cost = max(episode_costs)
-#     normalized_costs = [cost / max_cost for cost in episode_costs]
+# Function to plot episode costs using Bokeh
+def plot_episode_costs_bokeh(episode_costs, downsample_factor=1, smooth_factor=1):
+    # Normalize the episode costs
+    max_cost = max(episode_costs)
+    normalized_costs = [cost / max_cost for cost in episode_costs]
     
-#     # Downsample the episode costs
-#     normalized_costs_downsampled = normalized_costs[::downsample_factor]
+    # Downsample the episode costs
+    normalized_costs_downsampled = normalized_costs[::downsample_factor]
     
-#     # Smooth the episode costs using a moving average
-#     smoothed_costs = pd.Series(normalized_costs_downsampled).rolling(window=smooth_factor, min_periods=1).mean().tolist()
+    # Smooth the episode costs using a moving average
+    smoothed_costs = pd.Series(normalized_costs_downsampled).rolling(window=smooth_factor, min_periods=1).mean().tolist()
     
-#     # Create the plot
-#     p = figure(title="Episode Costs Over Time", x_axis_label='Episode', y_axis_label='Normalized Cost', width=800, height=400)
-#     p.line(range(len(smoothed_costs)), smoothed_costs, legend_label="Episode Cost", line_width=2, line_color='green')
-#     p.grid.visible = True
+    # Create the plot
+    p = figure(title="Episode Costs Over Time", x_axis_label='Episode', y_axis_label='Normalized Cost', width=800, height=400)
+    p.line(range(len(smoothed_costs)), smoothed_costs, legend_label="Episode Cost", line_width=2, line_color='green')
+    p.grid.visible = True
     
-#     # Output to HTML file
-#     output_file("episode_costs.html")
-#     show(p)
+    # Output to HTML file
+    output_file("episode_costs.html")
+    show(p)
 
-# # Function to plot episode costs using Bokeh
-# def plot_episode_time_bokeh(episode_avg_time, downsample_factor=1):
+# Function to plot episode costs using Bokeh
+def plot_episode_time_bokeh(episode_avg_time, downsample_factor=1):
 
-#     episode_time_downsampled = episode_avg_time[::downsample_factor]
+    episode_time_downsampled = episode_avg_time[::downsample_factor]
 
-#     p = figure(title="Episode Average Time", x_axis_label='Episode', y_axis_label='Time', width=800, height=400)
-#     p.line(range(len(episode_time_downsampled)), episode_time_downsampled, legend_label="Episode Time", line_width=2, line_color='cyan')
-#     p.grid.visible = True
+    p = figure(title="Episode Average Time", x_axis_label='Episode', y_axis_label='Time', width=800, height=400)
+    p.line(range(len(episode_time_downsampled)), episode_time_downsampled, legend_label="Episode Time", line_width=2, line_color='cyan')
+    p.grid.visible = True
     
-#     output_file("episode_time.html")
-#     show(p)
+    output_file("episode_time.html")
+    show(p)
 
 
 
@@ -304,97 +304,97 @@ def collect_data(env, policy, buffer, steps, cpu_utilization_list, mem_utilizati
 
 
 
-# def plot_smoothed_rewards_bokeh(rewards, window_size=100):
+def plot_smoothed_rewards_bokeh(rewards, window_size=100):
 
-#     smoothed_rewards = np.convolve(rewards, np.ones(window_size)/window_size, mode='valid')
+    smoothed_rewards = np.convolve(rewards, np.ones(window_size)/window_size, mode='valid')
     
-#     p = figure(title="Smoothed Rewards", x_axis_label='Step', y_axis_label='Reward', width=800, height=400)
-#     p.line(range(len(smoothed_rewards)), smoothed_rewards, legend_label="Reward", line_width=2, line_color='blue')
-#     p.grid.visible = True
+    p = figure(title="Smoothed Rewards", x_axis_label='Step', y_axis_label='Reward', width=800, height=400)
+    p.line(range(len(smoothed_rewards)), smoothed_rewards, legend_label="Reward", line_width=2, line_color='blue')
+    p.grid.visible = True
     
-#     output_file("smoothed_rewards.html")
-#     show(p)
+    output_file("smoothed_rewards.html")
+    show(p)
 
-# def plot_smoothed_rewards(rewards, window_size=100):
-#     smoothed_rewards = np.convolve(rewards, np.ones(window_size)/window_size, mode='valid')
+def plot_smoothed_rewards(rewards, window_size=100):
+    smoothed_rewards = np.convolve(rewards, np.ones(window_size)/window_size, mode='valid')
     
-#     plt.figure(figsize=(12, 6))
-#     plt.plot(smoothed_rewards, label='Reward')
-#     plt.ylabel('Reward')
-#     plt.xlabel('Step')
-#     plt.legend()
-#     plt.show()
+    plt.figure(figsize=(12, 6))
+    plt.plot(smoothed_rewards, label='Reward')
+    plt.ylabel('Reward')
+    plt.xlabel('Step')
+    plt.legend()
+    plt.show()
 
-# # Function to plot CPU and memory utilization using Bokeh
-# def plot_utilization_bokeh(cpu_utilization, mem_utilization, downsample_factor=250, window_size=10):
+# Function to plot CPU and memory utilization using Bokeh
+def plot_utilization_bokeh(cpu_utilization, mem_utilization, downsample_factor=250, window_size=10):
 
-#     # Flatten the nested lists
-#     cpu_utilization = list(chain.from_iterable(cpu_utilization))
-#     mem_utilization = list(chain.from_iterable(mem_utilization))
+    # Flatten the nested lists
+    cpu_utilization = list(chain.from_iterable(cpu_utilization))
+    mem_utilization = list(chain.from_iterable(mem_utilization))
 
-#     # Convert to percentage
-#     cpu_utilization = [val * 100 for val in cpu_utilization]
-#     mem_utilization = [val * 100 for val in mem_utilization]
+    # Convert to percentage
+    cpu_utilization = [val * 100 for val in cpu_utilization]
+    mem_utilization = [val * 100 for val in mem_utilization]
 
-#     cpu_utilization_downsampled = cpu_utilization[::downsample_factor]
-#     mem_utilization_downsampled = mem_utilization[::downsample_factor]
+    cpu_utilization_downsampled = cpu_utilization[::downsample_factor]
+    mem_utilization_downsampled = mem_utilization[::downsample_factor]
 
-#     # Apply smoothing
-#     def smooth(data, window_size):
-#         return np.convolve(data, np.ones(window_size) / window_size, mode='valid')
+    # Apply smoothing
+    def smooth(data, window_size):
+        return np.convolve(data, np.ones(window_size) / window_size, mode='valid')
 
-#     smoothed_cpu = smooth(cpu_utilization_downsampled, window_size)
-#     smoothed_mem = smooth(mem_utilization_downsampled, window_size)
+    smoothed_cpu = smooth(cpu_utilization_downsampled, window_size)
+    smoothed_mem = smooth(mem_utilization_downsampled, window_size)
 
-#     smoothed_cpu = [val * 2 for val in smoothed_cpu]
-#     smoothed_mem = [val * 2 for val in smoothed_mem]
+    smoothed_cpu = [val * 2 for val in smoothed_cpu]
+    smoothed_mem = [val * 2 for val in smoothed_mem]
 
-#     p = figure(title="CPU and Memory Utilization", x_axis_label='Step', y_axis_label='Utilization (%)', width=800, height=400)
-#     p.line(range(len(smoothed_cpu)), smoothed_cpu, legend_label="CPU Utilization", line_width=2, line_color='blue')
-#     p.line(range(len(smoothed_mem)), smoothed_mem, legend_label="Memory Utilization", line_width=2, line_color='orange')
-#     p.grid.visible = True
+    p = figure(title="CPU and Memory Utilization", x_axis_label='Step', y_axis_label='Utilization (%)', width=800, height=400)
+    p.line(range(len(smoothed_cpu)), smoothed_cpu, legend_label="CPU Utilization", line_width=2, line_color='blue')
+    p.line(range(len(smoothed_mem)), smoothed_mem, legend_label="Memory Utilization", line_width=2, line_color='orange')
+    p.grid.visible = True
     
-#     output_file("utilization.html")
-#     show(p)
+    output_file("utilization.html")
+    show(p)
 
-# # Function to plot job throughput bar using Bokeh
-# def plot_throughput_bar_bokeh(throughput_list, downsample_factor=20):
+# Function to plot job throughput bar using Bokeh
+def plot_throughput_bar_bokeh(throughput_list, downsample_factor=20):
 
-#     throughput_list = throughput_list[::downsample_factor]
+    throughput_list = throughput_list[::downsample_factor]
 
-#     p = figure(title="Job Throughput Bar Plot", x_axis_label='Episode', y_axis_label='Throughput (%)', width=800, height=400)
-#     p.vbar(x=range(len(throughput_list)), top=throughput_list, width=0.9, legend_label="Job Throughput (%)")
-#     p.grid.visible = True
+    p = figure(title="Job Throughput Bar Plot", x_axis_label='Episode', y_axis_label='Throughput (%)', width=800, height=400)
+    p.vbar(x=range(len(throughput_list)), top=throughput_list, width=0.9, legend_label="Job Throughput (%)")
+    p.grid.visible = True
     
-#     output_file("throughput_bar.html")
-#     show(p)
+    output_file("throughput_bar.html")
+    show(p)
 
 
-# # Function to plot deadline adherence as a bar chart using Bokeh
-# def plot_adherence_bar_bokeh(adherence_list, downsample_factor=10):
+# Function to plot deadline adherence as a bar chart using Bokeh
+def plot_adherence_bar_bokeh(adherence_list, downsample_factor=10):
 
-#     adherence_list = [x * 100 for x in adherence_list[::downsample_factor]]  # Scale adherence values to percentage
+    adherence_list = [x * 100 for x in adherence_list[::downsample_factor]]  # Scale adherence values to percentage
 
-#     p = figure(title="Deadline Adherence Bar Plot", x_axis_label='Episode', y_axis_label='Adherence (%)', width=800, height=400)
-#     p.vbar(x=range(len(adherence_list)), top=adherence_list, width=0.9, legend_label="Adherence (%)")
-#     p.grid.visible = True
+    p = figure(title="Deadline Adherence Bar Plot", x_axis_label='Episode', y_axis_label='Adherence (%)', width=800, height=400)
+    p.vbar(x=range(len(adherence_list)), top=adherence_list, width=0.9, legend_label="Adherence (%)")
+    p.grid.visible = True
     
-#     output_file("adherence_bar.html")
-#     show(p)
+    output_file("adherence_bar.html")
+    show(p)
 
 
-# # Function to plot smoothed deadline adherence over episodes using Bokeh
-# def plot_adherence_smoothed_line_bokeh(adherence_list, downsample_factor=10, window_size=20):
+# Function to plot smoothed deadline adherence over episodes using Bokeh
+def plot_adherence_smoothed_line_bokeh(adherence_list, downsample_factor=10, window_size=20):
 
-#     adherence_list = [x * 100 for x in adherence_list[::downsample_factor]]  # Scale adherence values to percentage
-#     smoothed_adherence = np.convolve(adherence_list, np.ones(window_size) / window_size, mode='valid')
+    adherence_list = [x * 100 for x in adherence_list[::downsample_factor]]  # Scale adherence values to percentage
+    smoothed_adherence = np.convolve(adherence_list, np.ones(window_size) / window_size, mode='valid')
 
-#     p = figure(title="Smoothed Deadline Adherence Over Episodes", x_axis_label='Episode', y_axis_label='Adherence (%)', width=800, height=400)
-#     p.line(range(len(smoothed_adherence)), smoothed_adherence, legend_label="Deadline Adherence (%)", line_width=1, line_color='orange')
-#     p.grid.visible = True
+    p = figure(title="Smoothed Deadline Adherence Over Episodes", x_axis_label='Episode', y_axis_label='Adherence (%)', width=800, height=400)
+    p.line(range(len(smoothed_adherence)), smoothed_adherence, legend_label="Deadline Adherence (%)", line_width=1, line_color='orange')
+    p.grid.visible = True
     
-#     output_file("adherence_smoothed_line.html")
-#     show(p)
+    output_file("adherence_smoothed_line.html")
+    show(p)
 
 ##########################################################################################################################################################################################
 
@@ -622,71 +622,71 @@ def train_rainbow_dqn(
     plt.legend()
     plt.show()
 
-    # plot_episode_costs_bokeh(episode_costs)
+    plot_episode_costs_bokeh(episode_costs)
 
-    # plot_episode_time_bokeh(episode_avg_time)
+    plot_episode_time_bokeh(episode_avg_time)
 
-    # plot_throughput_heatmap(throughput_list)
+    plot_throughput_heatmap(throughput_list)
 
-    # plot_smoothed_rewards(simple_rewards)
-    # plot_smoothed_rewards_bokeh(simple_rewards)
+    plot_smoothed_rewards(simple_rewards)
+    plot_smoothed_rewards_bokeh(simple_rewards)
 
-    # plot_utilization_bokeh(cpu_utilization_list, mem_utilization_list)
+    plot_utilization_bokeh(cpu_utilization_list, mem_utilization_list)
 
-    # plot_throughput_bar_bokeh(throughput_list)
+    plot_throughput_bar_bokeh(throughput_list)
 
-    # plot_adherence_bar_bokeh(adherence_list)
+    plot_adherence_bar_bokeh(adherence_list)
 
-    # plot_adherence_smoothed_line_bokeh(adherence_list)
+    plot_adherence_smoothed_line_bokeh(adherence_list)
 
-    # # Flatten the utilization lists
-    # flat_cpu_utilization_list = flatten_list(cpu_utilization_list)
-    # flat_mem_utilization_list = flatten_list(mem_utilization_list)
+    # Flatten the utilization lists
+    flat_cpu_utilization_list = flatten_list(cpu_utilization_list)
+    flat_mem_utilization_list = flatten_list(mem_utilization_list)
 
-    # avg_cpu_utilization = sum(flat_cpu_utilization_list) / len(flat_cpu_utilization_list) if flat_cpu_utilization_list else 0
-    # avg_mem_utilization = sum(flat_mem_utilization_list) / len(flat_mem_utilization_list) if flat_mem_utilization_list else 0
-
-
-
-    # # Save cost data to CSV
-    # episode_costs_csv = os.path.join(output_dir, 'episode_costs.csv')
-    # save_to_csv(episode_costs_csv, ['Episode Costs'], [[val] for val in episode_costs])
-
-    # # Save cost data to CSV
-    # episode_time_csv = os.path.join(output_dir, 'episode_time.csv')
-    # save_to_csv(episode_time_csv, ['Episode Time'], [[val] for val in episode_avg_time])
+    avg_cpu_utilization = sum(flat_cpu_utilization_list) / len(flat_cpu_utilization_list) if flat_cpu_utilization_list else 0
+    avg_mem_utilization = sum(flat_mem_utilization_list) / len(flat_mem_utilization_list) if flat_mem_utilization_list else 0
 
 
 
-    # # Save utilization data to CSV
-    # utilization_csv = os.path.join(output_dir, 'utilization.csv')
-    # utilization_data = zip(flat_cpu_utilization_list, flat_mem_utilization_list)
-    # save_to_csv(utilization_csv, ["CPU Utilization", "Memory Utilization"], utilization_data)
+    # Save cost data to CSV
+    episode_costs_csv = os.path.join(output_dir, 'episode_costs.csv')
+    save_to_csv(episode_costs_csv, ['Episode Costs'], [[val] for val in episode_costs])
 
-    # # Save throughput data to CSV
-    # throughput_csv = os.path.join(output_dir, 'throughput.csv')
-    # save_to_csv(throughput_csv, ["Throughput"], [[val] for val in throughput_list])
-
-    # # Save adherence data to CSV
-    # adherence_csv = os.path.join(output_dir, 'adherence.csv')
-    # save_to_csv(adherence_csv, ["Adherence"], [[val] for val in adherence_list])
-
-    # # Save rewards data to CSV
-    # rewards_csv = os.path.join(output_dir, 'rewards.csv')
-    # save_to_csv(rewards_csv, ['Rewards'], [[val] for val in simple_rewards])
-
-    # # Save losses data to CSV
-    # losses_csv = os.path.join(output_dir, 'losses.csv')
-    # save_to_csv(losses_csv, ['Losses'], [[val] for val in losses])
-
-    # # Save average losses data to CSV
-    # avg_losses_csv = os.path.join(output_dir, 'avg_losses.csv')
-    # save_to_csv(avg_losses_csv, ['Average Losses'], [[val] for val in avg_losses])
+    # Save cost data to CSV
+    episode_time_csv = os.path.join(output_dir, 'episode_time.csv')
+    save_to_csv(episode_time_csv, ['Episode Time'], [[val] for val in episode_avg_time])
 
 
-    # # Save utilization data to CSV
-    # utilization_csv = os.path.join(output_dir, 'avg_utilization.csv')
-    # save_to_csv(utilization_csv, ['Average CPU Utilization', 'Average Memory Utilization'], [[avg_cpu_utilization], [avg_mem_utilization]])
+
+    # Save utilization data to CSV
+    utilization_csv = os.path.join(output_dir, 'utilization.csv')
+    utilization_data = zip(flat_cpu_utilization_list, flat_mem_utilization_list)
+    save_to_csv(utilization_csv, ["CPU Utilization", "Memory Utilization"], utilization_data)
+
+    # Save throughput data to CSV
+    throughput_csv = os.path.join(output_dir, 'throughput.csv')
+    save_to_csv(throughput_csv, ["Throughput"], [[val] for val in throughput_list])
+
+    # Save adherence data to CSV
+    adherence_csv = os.path.join(output_dir, 'adherence.csv')
+    save_to_csv(adherence_csv, ["Adherence"], [[val] for val in adherence_list])
+
+    # Save rewards data to CSV
+    rewards_csv = os.path.join(output_dir, 'rewards.csv')
+    save_to_csv(rewards_csv, ['Rewards'], [[val] for val in simple_rewards])
+
+    # Save losses data to CSV
+    losses_csv = os.path.join(output_dir, 'losses.csv')
+    save_to_csv(losses_csv, ['Losses'], [[val] for val in losses])
+
+    # Save average losses data to CSV
+    avg_losses_csv = os.path.join(output_dir, 'avg_losses.csv')
+    save_to_csv(avg_losses_csv, ['Average Losses'], [[val] for val in avg_losses])
+
+
+    # Save utilization data to CSV
+    utilization_csv = os.path.join(output_dir, 'avg_utilization.csv')
+    save_to_csv(utilization_csv, ['Average CPU Utilization', 'Average Memory Utilization'], [[avg_cpu_utilization], [avg_mem_utilization]])
     
 # Call the training function
 #train_rainbow_dqn(num_iterations=20000, log_interval=100, eval_interval=1000, num_eval_episodes=10, initial_collect_steps=1000)

@@ -13,7 +13,7 @@ from tf_agents.trajectories import trajectory
 from tf_agents.utils import common
 import csv
 import constants
-from src.rb_environment import ClusterEnv
+from rm_environment import ClusterEnv
 
 tf.compat.v1.enable_v2_behavior()
 

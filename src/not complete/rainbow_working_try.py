@@ -15,7 +15,7 @@ from tf_agents.utils import common
 import numpy as np
 import math
 import logging
-from src.rb_environment import ClusterEnv  # Make sure this is correctly defined
+from rm_environment import ClusterEnv  # Make sure this is correctly defined
 
 tf.compat.v1.enable_v2_behavior()
 

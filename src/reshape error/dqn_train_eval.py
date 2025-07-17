@@ -47,7 +47,7 @@ import gin
 from six.moves import range
 import tensorflow as tf  # pylint: disable=g-explicit-tensorflow-version-import
 import tensorflow as tf
-from src.rb_environment import ClusterEnv
+from src.rm_environment import ClusterEnv
 from tf_agents.agents.dqn import dqn_agent
 from tf_agents.drivers import dynamic_step_driver
 from tf_agents.environments import suite_gym

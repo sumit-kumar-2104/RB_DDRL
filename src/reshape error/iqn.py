@@ -10,7 +10,7 @@ from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.trajectories import trajectory
 from tf_agents.utils import common
 import constants
-from src.rb_environment import ClusterEnv
+from rm_environment import ClusterEnv
 import csv
 import numpy as np
 from itertools import chain
